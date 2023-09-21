@@ -1,0 +1,20 @@
+SELECT count(DISTINCT a.customer_id) as all_customer_count, count(DISTINCT top_5_customers) as top_customer_count, d.country FROM customer a
+INNER JOIN address b on a.address_id=b.address_id
+INNER JOIN city c on b.city_id=c.city_id
+INNER JOIN country d on c.country_id=d.country_id
+LEFT JOIN 
+	(SELECT a.first_name as customer_first_name, a.last_name as customer_last_name, a.customer_id,
+	 		d.country, city, SUM(e.amount) as total_amount_paid
+	 FROM customer a
+		INNER JOIN address b on a.address_id = b.address_id
+		INNER JOIN city c on b. city_id = c. city_id
+		INNER JOIN country d on c.country_id = d.country_id
+		INNER JOIN payment e on a.customer_id = e.customer_id
+	 WHERE city IN ('Aurora', 'Acua', 'Citrus Heights', 'Iwaki', 'Ambattur', 'Shanwei','So Leopoldo', 'Teboksary', 'Tianjin', 'Cianjur')
+	 GROUP BY a.customer_id, a.first_name, a.last_name, c.city, d.country
+	 ORDER BY total_amount_paid DESC
+	 Limit 5) as top_5_customers
+ON a.customer_id=top_5_customers.customer_id
+GROUP BY d.country
+HAVING COUNT(DISTINCT top_5_customers) > 0
+ORDER BY (all_customer_count) DESC
